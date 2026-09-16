@@ -55,6 +55,7 @@ class _FlyBoostBase(BaseEstimator):
         epochs_per_fly: int = 8,
         batch_size: int = 32,
         fly_lr: float = 2e-3,
+        fly_gain_lr: float = 0.0,
         fly_mode: str = "real",
         leak: float = 0.5,
         max_log_gain: float = math.log(2.0),
@@ -72,6 +73,7 @@ class _FlyBoostBase(BaseEstimator):
         self.epochs_per_fly = epochs_per_fly
         self.batch_size = batch_size
         self.fly_lr = fly_lr
+        self.fly_gain_lr = fly_gain_lr
         self.fly_mode = fly_mode
         self.leak = leak
         self.max_log_gain = max_log_gain
@@ -97,6 +99,8 @@ class _FlyBoostBase(BaseEstimator):
             raise ValueError("learning_rate must be > 0")
         if float(self.fly_lr) <= 0:
             raise ValueError("fly_lr must be > 0")
+        if float(self.fly_gain_lr) < 0:
+            raise ValueError("fly_gain_lr must be >= 0")
         if not (0 < float(self.leak) <= 1):
             raise ValueError("leak must be in (0, 1]")
         if self.auto_download and not str(self.graph_url):
@@ -174,8 +178,19 @@ class _FlyBoostBase(BaseEstimator):
             return fly_cls(**kwargs)
 
     def _make_optimizer(self, fly) -> torch.optim.Optimizer:
-        params = [p for p in fly.parameters() if p.requires_grad]
-        return torch.optim.Adam(params, lr=float(self.fly_lr))
+        gain_lr = float(self.fly_lr if self.fly_gain_lr == 0 else self.fly_gain_lr)
+        gain_params = [
+            p for p in (fly.pre_theta, fly.post_theta, fly.sensor_theta)
+            if p.requires_grad
+        ]
+        readout_params = [p for p in fly.readout.parameters() if p.requires_grad]
+
+        groups = []
+        if gain_params:
+            groups.append({"params": gain_params, "lr": gain_lr})
+        if readout_params:
+            groups.append({"params": readout_params, "lr": float(self.fly_lr)})
+        return torch.optim.Adam(groups)
 
     def _batched_predict(self, fly, x: torch.Tensor) -> torch.Tensor:
         out = []
