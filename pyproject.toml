@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "flyboost-connectome"
+version = "0.1.0"
+description = "Scikit-learn compatible boosting estimators built on a Drosophila connectome reservoir"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{name = "FlyBoost contributors"}]
+dependencies = [
+  "numpy>=1.26",
+  "scikit-learn>=1.6",
+  "torch>=2.4",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "build>=1.2"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

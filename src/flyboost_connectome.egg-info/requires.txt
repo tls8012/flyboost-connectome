@@ -1,0 +1,7 @@
+numpy>=1.26
+scikit-learn>=1.6
+torch>=2.4
+
+[dev]
+pytest>=8
+build>=1.2
