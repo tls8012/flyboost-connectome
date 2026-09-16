@@ -19,6 +19,7 @@ class TrainableFly(nn.Module):
         seed: int = 0,
         device: str = "cpu",
         verbose: int = 0,
+        output_dim: int = 1,
     ):
         super().__init__()
         self.n = graph.num_nodes
@@ -28,6 +29,9 @@ class TrainableFly(nn.Module):
         self.max_log_gain = float(max_log_gain)
         self.device_name = device
         self.verbose = int(verbose)
+        self.output_dim = int(output_dim)
+        if self.output_dim < 1:
+            raise ValueError("output_dim must be >= 1")
 
         W = torch.sparse_coo_tensor(
             graph.edge_index.to(device),
@@ -62,7 +66,7 @@ class TrainableFly(nn.Module):
             torch.zeros(len(graph.sensory_idx), device=device)
         )
         self.readout = nn.Linear(
-            len(graph.readout_idx), 1, bias=True, device=device
+            len(graph.readout_idx), self.output_dim, bias=True, device=device
         )
 
     def _gain(self, theta: torch.Tensor) -> torch.Tensor:
@@ -88,7 +92,8 @@ class TrainableFly(nn.Module):
             proposal = torch.tanh(recurrent + drive)
             h = (1.0 - self.leak) * h + self.leak * proposal
 
-        return self.readout(h[:, self.readout_idx]).squeeze(-1)
+        out = self.readout(h[:, self.readout_idx])
+        return out.squeeze(-1) if self.output_dim == 1 else out
 
 
 class ShuffledTrainableFly(TrainableFly):
@@ -115,6 +120,7 @@ class ShuffledTrainableFly(TrainableFly):
         device: str = "cpu",
         verbose: int = 0,
         shuffle_seed: int = 20260915,
+        output_dim: int = 1,
     ):
         cls = self.__class__
         if (
@@ -176,6 +182,7 @@ class ShuffledTrainableFly(TrainableFly):
             seed=seed,
             device=device,
             verbose=verbose,
+            output_dim=output_dim,
         )
 
 
@@ -192,6 +199,7 @@ class FrozenTrainableFly(TrainableFly):
         seed: int = 0,
         device: str = "cpu",
         verbose: int = 0,
+        output_dim: int = 1,
     ):
         super().__init__(
             graph=graph,
@@ -202,6 +210,7 @@ class FrozenTrainableFly(TrainableFly):
             seed=seed,
             device=device,
             verbose=verbose,
+            output_dim=output_dim,
         )
 
         self.pre_theta.requires_grad_(False)
