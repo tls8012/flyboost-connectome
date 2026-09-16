@@ -4,6 +4,9 @@ A small scikit-learn-compatible wrapper around the FlyBoost prototype from the
 research notebook. The connectome tensor file is **not** bundled; point
 `graph_path` at your existing `malecns_nomotor.pt`.
 
+download here: https://github.com/tls8012/flyboost-connectome/releases/download/v0.1.0/malecns_nomotor.pt
+wget https://github.com/tls8012/flyboost-connectome/releases/download/v0.1.0/malecns_nomotor.pt
+
 ## Install
 
 From the project directory:
