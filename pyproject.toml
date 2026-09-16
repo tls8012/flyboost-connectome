@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "flyboost-connectome"
-version = "0.1.0"
+version = "0.2.0"
 description = "Scikit-learn compatible boosting estimators built on a Drosophila connectome reservoir"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -23,3 +23,6 @@ where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[project.urls]
+Repository = "https://github.com/tls8012/flyboost-connectome"
